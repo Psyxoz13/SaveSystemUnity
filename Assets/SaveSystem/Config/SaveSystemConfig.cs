@@ -3,10 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SaveSystemConfig", menuName = "SaveSystem/Config", order = 1), System.Serializable]
 public class SaveSystemConfig : ScriptableObject
 {
-    public SaveSystem.SaveVariations SaveSystemVariation;
-    public PathOptions PathOption;
+    [Readonly] public SaveSystem.SaveVariations SaveSystemVariation;
+    [HideInInspector] public PathOptions PathOption;
 
-    public string Path;
-    public string SubPath;
-    public string FileFormat;
+    [Readonly] public string Path;
+    [HideInInspector] public string SubPath;
+    [Readonly] public string FileFormat;
 }
