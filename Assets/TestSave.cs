@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class TestSave : MonoBehaviour
 {
     [SerializeField] private int _id;
@@ -27,6 +28,11 @@ public class TestSave : MonoBehaviour
         _id = model.ID;
         _name = model.Name;
         _speed = model.Speed;
+    }
+
+    private void Update()
+    {
+
     }
 }
 

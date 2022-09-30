@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class SaveSystemSettings : EditorWindow
+public class SaveSystemSettingsWindow : EditorWindow
 {
     [SerializeField] private string _configGUID;
 
@@ -21,8 +21,9 @@ public class SaveSystemSettings : EditorWindow
     [MenuItem("SaveSystem/Settings")]
     public static void ShowWindow()
     {       
-        GetWindow<SaveSystemSettings>("SaveSystem Settings");
+        GetWindow<SaveSystemSettingsWindow>("SaveSystem Settings");
     }
+
     private void CreateGUI()
     {
         SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.Folder, "folder-icon.png");
@@ -30,7 +31,7 @@ public class SaveSystemSettings : EditorWindow
 
     private void OnEnable()
     {
-        var data = EditorPrefs.GetString("SaveSystemSettings", JsonUtility.ToJson(this, false));
+        var data = EditorPrefs.GetString(SaveSystemEditorPrefsKeys.SaveSystemSettings.ToString(), JsonUtility.ToJson(this, false));
         JsonUtility.FromJsonOverwrite(data, this);
 
         var configPath = AssetDatabase.GUIDToAssetPath(_configGUID);
@@ -45,7 +46,7 @@ public class SaveSystemSettings : EditorWindow
         }
 
         var data = JsonUtility.ToJson(this, false);
-        EditorPrefs.SetString("SaveSystemSettings", data);
+        EditorPrefs.SetString(SaveSystemEditorPrefsKeys.SaveSystemSettings.ToString(), data);
     }
 
     private void OnGUI()
