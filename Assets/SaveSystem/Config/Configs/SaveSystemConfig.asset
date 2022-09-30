@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SaveSystemConfig
   m_EditorClassIdentifier: 
   SaveSystemVariation: 0
-  PathOption: 0
-  Path: C:/Users/Klyue/AppData/LocalLow/DefaultCompany/SaveSystem/Saves
-  SubPath: Saves
+  PathOption: 1
+  Path: C:/Users/Klyue/AppData/LocalLow/DefaultCompany/SaveSystem/Saves/
+  SubPath: Saves/Saves/
   FileFormat: json

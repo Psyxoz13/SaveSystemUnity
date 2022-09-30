@@ -13,6 +13,7 @@ public class SaveSystemSettingsWindow : EditorWindow
     [SerializeField] private string _subPath;
     [SerializeField] private string _fileFormat;
     [SerializeField] private bool _isFormatEdit;
+    [SerializeField] private bool _isDebugShow;
 
     private const string SaveSystemConfigPath = "Assets/Resources/SaveSystem/SaveSystemData.asset";
 
@@ -103,13 +104,27 @@ public class SaveSystemSettingsWindow : EditorWindow
 
                     _path = EditorGUILayout.TextField("Path", _path);
 
-                    if (GUILayout.Button(SaveSystemEditorIconsData.Folder.Texture, GUILayout.MaxWidth(20), GUILayout.MaxHeight(18)))
+                    var selectDirectoeyStyle = new GUIStyle("button")
                     {
-                        var selectedPath = EditorUtility.OpenFolderPanel("Select Directory", "", "");
+                        padding = new RectOffset(3, 3, 3, 3)
+                    };
 
-                        if (string.IsNullOrEmpty(selectedPath) == false)
+                    if (GUILayout.Button(SaveSystemEditorIconsData.Folder.Texture, selectDirectoeyStyle, GUILayout.MaxWidth(20), GUILayout.MaxHeight(18)))
+                    {
+                        if (Directory.Exists(_path) == false)
                         {
-                            _path = selectedPath;
+                            Debug.unityLogger.LogError("Error", "Directory does not exist.", this);
+
+                            //SaveSystemWarningWindow.Show("Directory does not exist.", SaveSystemWarningWindow.WarningType.Error);
+                        }
+                        else
+                        {
+                            var selectedPath = EditorUtility.OpenFolderPanel("Select Directory", _path, "");
+
+                            if (string.IsNullOrEmpty(selectedPath) == false)
+                            {
+                                _path = selectedPath;
+                            }
                         }
                     }
 
@@ -135,6 +150,39 @@ public class SaveSystemSettingsWindow : EditorWindow
         {
             TrySetFormat();
             SetConfig();
+        }
+
+        EditorGUILayout.Space();
+
+        _isDebugShow = EditorGUILayout.Foldout(_isDebugShow, "Debug", true);
+        
+        if (_isDebugShow)
+        {
+            EditorGUILayout.BeginVertical("TextArea");
+
+            var openPathFolderContent = new GUIContent("Open path", SaveSystemEditorIconsData.Folder.Texture);
+            var openPathFolderStyle = new GUIStyle("button")
+            {
+                margin = new RectOffset(5, 5, 5, 5),
+                imagePosition = ImagePosition.ImageAbove,
+                padding = new RectOffset(5, 5, 5, 5)
+            };
+
+            if (GUILayout.Button(openPathFolderContent, openPathFolderStyle, GUILayout.Width(75), GUILayout.Height(40)))
+            {
+                if (Directory.Exists(_path) == false)
+                {
+                    Debug.unityLogger.LogError("Error", "Directory does not exist.", this);
+                    //SaveSystemWarningWindow.Show("Directory does not exist.", SaveSystemWarningWindow.WarningType.Error);
+                }
+                else
+                {
+                    Application.OpenURL(_path);
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
         }
     }
 
