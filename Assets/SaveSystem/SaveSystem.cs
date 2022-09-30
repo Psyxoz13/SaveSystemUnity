@@ -21,9 +21,11 @@ public static class SaveSystem
             case PathOptions.PersistentDataPath:
                 path = Application.persistentDataPath + "/" + saveSystemConfigData.SubPath;
                 break;
+#if UNITY_STANDALONE_WIN
             case PathOptions.Documents:
                 path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments).Replace('\\', '/') + "/" + saveSystemConfigData.SubPath;
                 break;
+#endif
             case PathOptions.Manual:
                 path = saveSystemConfigData.Path;
                 break;

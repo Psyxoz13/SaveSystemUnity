@@ -13,7 +13,7 @@ internal class SaveSystemWelcomeWindow : EditorWindow
         }
     }
 
-    [MenuItem("SaveSystem/Get Started!")]
+    [MenuItem("SaveSystem/Get Started!", priority = 0)]
     public static void ShowWindow()
     {
         var window = GetWindow<SaveSystemWelcomeWindow>("SaveSystem by Psyxoz13");

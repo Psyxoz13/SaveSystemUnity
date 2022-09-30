@@ -21,7 +21,9 @@ public class SaveSystemSettingsWindow : EditorWindow
     [MenuItem("SaveSystem/Settings")]
     public static void ShowWindow()
     {       
-        GetWindow<SaveSystemSettingsWindow>("SaveSystem Settings");
+        var window = GetWindow<SaveSystemSettingsWindow>("SaveSystem Settings");
+
+        window.minSize = new Vector2(500f, 400f);
     }
 
     private void CreateGUI()
@@ -87,12 +89,14 @@ public class SaveSystemSettingsWindow : EditorWindow
                     DrawSubPathInput(pathPattern);
                 }
                 break;
+#if UNITY_STANDALONE_WIN
             case PathOptions.Documents:
                 {
                     pathPattern = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments).Replace('\\', '/') + "/";
                     DrawSubPathInput(pathPattern);
                 }
                 break;
+#endif
             case PathOptions.Manual:
                 {
                     EditorGUILayout.BeginHorizontal();
