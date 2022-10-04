@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 307b7bcb4b65cde4ca7d269ec11f257e, type: 3}
   m_Name: SaveSystemConfig
   m_EditorClassIdentifier: 
-  SaveSystemVariation: 0
-  PathOption: 1
-  Path: C:/Users/Klyue/AppData/LocalLow/DefaultCompany/SaveSystem/Saves/
-  SubPath: Saves/Saves/
-  FileFormat: json
+  SaveSystemVariation: 1
+  PathOption: 0
+  Path: C:/Users/Klyue/AppData/LocalLow/DefaultCompany/SaveSystem/Saves
+  SubPath: Saves
+  FileFormat: bin

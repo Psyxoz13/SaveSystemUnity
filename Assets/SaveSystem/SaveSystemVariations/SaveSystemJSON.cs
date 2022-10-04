@@ -1,52 +1,55 @@
 using System.IO;
 using UnityEngine;
 
-public class SaveSystemJSON : SaveSystemData, ISaveSystem
+namespace SSystem
 {
-    public SaveSystemJSON(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
-    { }
-
-    public SaveSystemJSON() : base()
-    { }
-
-    public void Save<T>(T data)
+    internal class SaveSystemJSON : SaveSystemData, ISaveSystem
     {
-        string json = JsonUtility.ToJson(data);
+        internal SaveSystemJSON(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
+        { }
 
-        var fileStream = CreateFileStream(typeof(T).Name);
+        internal SaveSystemJSON() : base()
+        { }
 
-        using var streamWriter = new StreamWriter(fileStream);
-
-        streamWriter.Write(json);
-
-        streamWriter.Close();
-        fileStream.Close();
-    }
-    
-    public T Load<T>()
-    {
-        try
+        public void Save<T>(T data)
         {
-            var json = ReadFile(typeof(T).Name);
+            string json = JsonUtility.ToJson(data);
 
-            var data = JsonUtility.FromJson<T>(json);
+            var fileStream = CreateFileStream(typeof(T).Name);
 
-            return data;
+            using var streamWriter = new StreamWriter(fileStream);
+
+            streamWriter.Write(json);
+
+            streamWriter.Close();
+            fileStream.Close();
         }
-        catch
+
+        public T Load<T>()
         {
-            return (T)System.Activator.CreateInstance(typeof(T));
+            try
+            {
+                var json = ReadFile(typeof(T).Name);
+
+                var data = JsonUtility.FromJson<T>(json);
+
+                return data;
+            }
+            catch
+            {
+                return (T)System.Activator.CreateInstance(typeof(T));
+            }
         }
-    }
 
-    public void Rewrite<T>(T data)
-    {
-        Delete<T>();
-        Save(data);
-    }
+        public void Rewrite<T>(T data)
+        {
+            Delete<T>();
+            Save(data);
+        }
 
-    public void Delete<T>()
-    {
-        DeleteFile(typeof(T).Name);
+        public void Delete<T>()
+        {
+            DeleteFile(typeof(T).Name);
+        }
     }
 }

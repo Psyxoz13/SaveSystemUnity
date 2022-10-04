@@ -1,11 +1,15 @@
 using UnityEngine;
 
-public class SaveSystemConfigData : ScriptableObject
+namespace SSystem
 {
-    public SaveSystem.SaveVariations SaveSystemVariation { get; set; }
-    public PathOptions PathOption { get; set; }
+    public class SaveSystemConfigData : ScriptableObject
+    {
+        [HideInInspector] public SaveSystem.SaveVariations SaveSystemVariation;
+        [HideInInspector] public PathOptions PathOption;
 
-    public string Path { get; set; }
-    public string SubPath { get; set; }
-    public string FileFormat { get; set; }
+        [HideInInspector] public string Path;
+        [HideInInspector] public string SubPath;
+        [HideInInspector] public string FileFormat;
+    }
 }
+

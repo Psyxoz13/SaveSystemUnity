@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using SSystem;
 
 public class SaveSystemSettingsWindow : EditorWindow
 {
@@ -13,11 +14,19 @@ public class SaveSystemSettingsWindow : EditorWindow
     [SerializeField] private string _subPath;
     [SerializeField] private string _fileFormat;
     [SerializeField] private bool _isFormatEdit;
+    [SerializeField] private bool _isToolsShow;
     [SerializeField] private bool _isDebugShow;
 
     private const string SaveSystemConfigPath = "Assets/Resources/SaveSystem/SaveSystemData.asset";
 
+    private TypeMemoryCache<GUIStyle> _stylesCache = new TypeMemoryCache<GUIStyle>();
     private SaveSystemConfig _config;
+
+    private enum CacheStyleType
+    {
+        ToolButton,
+        SelectDirectory
+    }
 
     [MenuItem("SaveSystem/Settings")]
     public static void ShowWindow()
@@ -30,6 +39,24 @@ public class SaveSystemSettingsWindow : EditorWindow
     private void CreateGUI()
     {
         SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.Folder, "folder-icon.png");
+
+        _stylesCache.Cache(CacheStyleType.ToolButton, new GUIStyle("button")
+        {
+            margin = new RectOffset(5, 5, 5, 5),
+            imagePosition = ImagePosition.ImageAbove,
+            padding = new RectOffset(5, 5, 5, 5)
+        });
+        _stylesCache.Cache(CacheStyleType.SelectDirectory, new GUIStyle("button")
+        {
+            padding = new RectOffset(3, 3, 3, 3)
+        });
+
+        TrySetFormat();
+    }
+
+    private void OnDestroy()
+    {
+        _stylesCache.ClearCache();
     }
 
     private void OnEnable()
@@ -65,8 +92,8 @@ public class SaveSystemSettingsWindow : EditorWindow
 
         if (EditorGUI.EndChangeCheck())
         {
-            SetParams();
             TrySetFormat();
+            SetParams();
             SetConfig();
         }
 
@@ -104,12 +131,7 @@ public class SaveSystemSettingsWindow : EditorWindow
 
                     _path = EditorGUILayout.TextField("Path", _path);
 
-                    var selectDirectoeyStyle = new GUIStyle("button")
-                    {
-                        padding = new RectOffset(3, 3, 3, 3)
-                    };
-
-                    if (GUILayout.Button(SaveSystemEditorIconsData.Folder.Texture, selectDirectoeyStyle, GUILayout.MaxWidth(20), GUILayout.MaxHeight(18)))
+                    if (GUILayout.Button(SaveSystemEditorIconsData.Folder.Texture, _stylesCache.Get(CacheStyleType.SelectDirectory), GUILayout.MaxWidth(20), GUILayout.MaxHeight(18)))
                     {
                         if (Directory.Exists(_path) == false)
                         {
@@ -155,25 +177,41 @@ public class SaveSystemSettingsWindow : EditorWindow
         EditorGUILayout.Space();
 
         _isDebugShow = EditorGUILayout.Foldout(_isDebugShow, "Debug", true);
-        
+
         if (_isDebugShow)
+        {
+            GUI.enabled = false;
+            switch (_pathOption)
+            {
+                case PathOptions.PersistentDataPath:
+                    EditorGUILayout.TextField("IOS Path", "/var/mobile/Containers/Data/Application/<guid>/Documents/" + _subPath);
+                    EditorGUILayout.TextField("Android Path", "/storage/emulated/0/Android/data/<packagename>/files/" + _subPath);
+                    break;
+                case PathOptions.Manual:
+                    EditorGUILayout.TextField("IOS Path", "/var/mobile/" + _path);
+                    EditorGUILayout.TextField("Android Path", "/storage/emulated/0/" + _path);
+                    break;
+                default:
+                    break;
+            }
+            GUI.enabled = true;
+        }
+
+        EditorGUILayout.Space();
+
+        _isToolsShow = EditorGUILayout.Foldout(_isToolsShow, "Tools", true);
+        
+        if (_isToolsShow)
         {
             EditorGUILayout.BeginVertical("TextArea");
 
             var openPathFolderContent = new GUIContent("Open path", SaveSystemEditorIconsData.Folder.Texture);
-            var openPathFolderStyle = new GUIStyle("button")
-            {
-                margin = new RectOffset(5, 5, 5, 5),
-                imagePosition = ImagePosition.ImageAbove,
-                padding = new RectOffset(5, 5, 5, 5)
-            };
 
-            if (GUILayout.Button(openPathFolderContent, openPathFolderStyle, GUILayout.Width(75), GUILayout.Height(40)))
+            if (GUILayout.Button(openPathFolderContent, _stylesCache.Get(CacheStyleType.ToolButton), GUILayout.Width(75), GUILayout.Height(40)))
             {
                 if (Directory.Exists(_path) == false)
                 {
                     Debug.unityLogger.LogError("Error", "Directory does not exist.", this);
-                    //SaveSystemWarningWindow.Show("Directory does not exist.", SaveSystemWarningWindow.WarningType.Error);
                 }
                 else
                 {

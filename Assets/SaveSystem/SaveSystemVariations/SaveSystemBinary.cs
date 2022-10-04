@@ -1,50 +1,53 @@
 using System.Runtime.Serialization.Formatters.Binary;
 
-public class SaveSystemBinary : SaveSystemData, ISaveSystem
+namespace SSystem
 {
-    public SaveSystemBinary(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
-    { }
-
-    public SaveSystemBinary() : base()
-    { }
-
-    public void Save<T>(T data)
+    internal class SaveSystemBinary : SaveSystemData, ISaveSystem
     {
-        var binaryFormatter = new BinaryFormatter();
-        var dataFile = CreateFileStream(typeof(T).Name);
+        internal SaveSystemBinary(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
+        { }
 
-        binaryFormatter.Serialize(dataFile, data);
+        internal SaveSystemBinary() : base()
+        { }
 
-        dataFile.Close();
-    }
-
-    public void Rewrite<T>(T data)
-    {
-        Delete<T>();
-        Save(data);
-    }
-
-    public void Delete<T>()
-    {
-        DeleteFile(typeof(T).Name);
-    }
-
-    public T Load<T>()
-    {
-        try
+        public void Save<T>(T data)
         {
             var binaryFormatter = new BinaryFormatter();
-            var fileStream = CreateFileStream(typeof(T).Name);
+            var dataFile = CreateFileStream(typeof(T).Name);
 
-            var data = (T)binaryFormatter.Deserialize(fileStream);
+            binaryFormatter.Serialize(dataFile, data);
 
-            fileStream.Close();
-
-            return data;
+            dataFile.Close();
         }
-        catch
+
+        public void Rewrite<T>(T data)
         {
-            return (T)System.Activator.CreateInstance(typeof(T));
+            Delete<T>();
+            Save(data);
+        }
+
+        public void Delete<T>()
+        {
+            DeleteFile(typeof(T).Name);
+        }
+
+        public T Load<T>()
+        {
+            try
+            {
+                var binaryFormatter = new BinaryFormatter();
+                var fileStream = CreateFileStream(typeof(T).Name);
+
+                var data = (T)binaryFormatter.Deserialize(fileStream);
+
+                fileStream.Close();
+
+                return data;
+            }
+            catch
+            {
+                return (T)System.Activator.CreateInstance(typeof(T));
+            }
         }
     }
 }
