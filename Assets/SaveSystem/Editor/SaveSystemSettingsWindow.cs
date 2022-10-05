@@ -17,15 +17,21 @@ public class SaveSystemSettingsWindow : EditorWindow
     [SerializeField] private bool _isToolsShow;
     [SerializeField] private bool _isDebugShow;
 
-    private const string SaveSystemConfigPath = "Assets/Resources/SaveSystem/SaveSystemData.asset";
+    private const string SaveSystemConfigDataPath = "Assets/Resources/SaveSystem/SaveSystemData.asset";
+    private const string SaveSystemConfigsDirectory = "Assets/SaveSystemConfigs/";
 
-    private TypeMemoryCache<GUIStyle> _stylesCache = new TypeMemoryCache<GUIStyle>();
+    private TypeMemoryCache<CacheStyleType, GUIStyle> _stylesCache = new TypeMemoryCache<CacheStyleType, GUIStyle>();
+    private SaveSystemJSON _saveSystem = new SaveSystemJSON("json", "ProjectSettings");
+
     private SaveSystemConfig _config;
 
     private enum CacheStyleType
     {
         ToolButton,
-        SelectDirectory
+        SelectDirectory,
+        ReadonlyTextField,
+        ContentBox,
+        ContentBoxSmall
     }
 
     [MenuItem("SaveSystem/Settings")]
@@ -44,11 +50,36 @@ public class SaveSystemSettingsWindow : EditorWindow
         {
             margin = new RectOffset(5, 5, 5, 5),
             imagePosition = ImagePosition.ImageAbove,
-            padding = new RectOffset(5, 5, 5, 5)
+            padding = new RectOffset(5, 5, 5, 5),
+            fixedWidth = 70,
+            fixedHeight = 50
         });
+
         _stylesCache.Cache(CacheStyleType.SelectDirectory, new GUIStyle("button")
         {
             padding = new RectOffset(3, 3, 3, 3)
+        });
+
+        _stylesCache.Cache(CacheStyleType.ContentBox, new GUIStyle(EditorStyles.helpBox)
+        {
+            padding = new RectOffset(10, 7, 7, 7)
+        });
+
+        _stylesCache.Cache(CacheStyleType.ContentBoxSmall, new GUIStyle(EditorStyles.helpBox)
+        {
+            padding = new RectOffset(10, 7, 3, 3)
+        });
+
+        _stylesCache.Cache(CacheStyleType.ReadonlyTextField, new GUIStyle(EditorStyles.textField)
+        {
+            normal = new GUIStyleState()
+            {
+                textColor = Color.gray
+            },
+            focused = new GUIStyleState()
+            {
+                textColor = new Color(.98f, .83f, .565f)
+            }
         });
 
         TrySetFormat();
@@ -61,8 +92,7 @@ public class SaveSystemSettingsWindow : EditorWindow
 
     private void OnEnable()
     {
-        var data = EditorPrefs.GetString(SaveSystemEditorPrefsKeys.SaveSystemSettings.ToString(), JsonUtility.ToJson(this, false));
-        JsonUtility.FromJsonOverwrite(data, this);
+        _saveSystem.Overwrite(this);
 
         var configPath = AssetDatabase.GUIDToAssetPath(_configGUID);
         _config = AssetDatabase.LoadAssetAtPath<SaveSystemConfig>(configPath);
@@ -75,15 +105,48 @@ public class SaveSystemSettingsWindow : EditorWindow
             _configGUID = guid;
         }
 
-        var data = JsonUtility.ToJson(this, false);
-        EditorPrefs.SetString(SaveSystemEditorPrefsKeys.SaveSystemSettings.ToString(), data);
+        _saveSystem = new SaveSystemJSON("json", "ProjectSettings");
+        _saveSystem.Save(this);
     }
 
     private void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
+        EditorGUILayout.BeginHorizontal(_stylesCache.Get(CacheStyleType.ContentBoxSmall));
 
         _config = (SaveSystemConfig)EditorGUILayout.ObjectField("Config", _config, typeof(SaveSystemConfig), true);
+
+        if (GUILayout.Button("New", GUILayout.Width(40)))
+        {
+            string path;
+
+            if (_config != null)
+            {
+                path = Path.GetDirectoryName(AssetDatabase.GetAssetPath(_config)) + "/";
+            }
+            else
+            {
+                path = SaveSystemConfigsDirectory;
+            }
+
+            if (Directory.Exists(SaveSystemConfigsDirectory) == false)
+            {
+                Directory.CreateDirectory(SaveSystemConfigsDirectory);
+            }
+
+            var uniqueFilePath = AssetDatabase.GenerateUniqueAssetPath(path + "SaveSystemConfig.asset");
+            var config = CreateInstance<SaveSystemConfig>();
+
+            AssetDatabase.CreateAsset(config, uniqueFilePath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            _config = config;
+
+            EditorGUIUtility.PingObject(config);
+        }
+
+        EditorGUILayout.EndHorizontal();
 
         if (_config == null)
         {
@@ -97,15 +160,17 @@ public class SaveSystemSettingsWindow : EditorWindow
             SetConfig();
         }
 
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(2);
+
+        EditorGUILayout.BeginVertical(_stylesCache.Get(CacheStyleType.ContentBox));
 
         EditorGUI.BeginChangeCheck();
 
-        _saveSystemVariation = (SaveSystem.SaveVariations)EditorGUILayout.EnumPopup("Save system", _saveSystemVariation);
+        _saveSystemVariation = (SaveSystem.SaveVariations)EditorGUILayout.EnumPopup("Save System", _saveSystemVariation);
 
         EditorGUILayout.Space();
 
-        _pathOption = (PathOptions)EditorGUILayout.EnumPopup("Path option", _pathOption);
+        _pathOption = (PathOptions)EditorGUILayout.EnumPopup("Path Option", _pathOption);
 
         string pathPattern;
 
@@ -136,8 +201,6 @@ public class SaveSystemSettingsWindow : EditorWindow
                         if (Directory.Exists(_path) == false)
                         {
                             Debug.unityLogger.LogError("Error", "Directory does not exist.", this);
-
-                            //SaveSystemWarningWindow.Show("Directory does not exist.", SaveSystemWarningWindow.WarningType.Error);
                         }
                         else
                         {
@@ -159,7 +222,7 @@ public class SaveSystemSettingsWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
 
-        _isFormatEdit = EditorGUILayout.Toggle("Edit file format", _isFormatEdit);
+        _isFormatEdit = EditorGUILayout.Toggle("Edit File Format", _isFormatEdit);
         
         if (_isFormatEdit)
         {
@@ -167,6 +230,7 @@ public class SaveSystemSettingsWindow : EditorWindow
         }
 
         EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -174,40 +238,54 @@ public class SaveSystemSettingsWindow : EditorWindow
             SetConfig();
         }
 
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(15);
 
-        _isDebugShow = EditorGUILayout.Foldout(_isDebugShow, "Debug", true);
+        _isDebugShow = EditorGUILayout.Foldout(_isDebugShow, "Debug", true, new GUIStyle(EditorStyles.foldout) 
+        { 
+            onNormal =
+            {
+                textColor = new Color(.92157f, .18431f, .02353f)
+            }
+        });
 
         if (_isDebugShow)
         {
-            GUI.enabled = false;
+            EditorGUILayout.BeginVertical(_stylesCache.Get(CacheStyleType.ContentBoxSmall));
+
             switch (_pathOption)
             {
                 case PathOptions.PersistentDataPath:
-                    EditorGUILayout.TextField("IOS Path", "/var/mobile/Containers/Data/Application/<guid>/Documents/" + _subPath);
-                    EditorGUILayout.TextField("Android Path", "/storage/emulated/0/Android/data/<packagename>/files/" + _subPath);
+                    DrawReadonlyTextField("IOS Path", "/var/mobile/Containers/Data/Application/<guid>/Documents/" + _subPath);
+                    DrawReadonlyTextField("Android Path", "/storage/emulated/0/Android/data/<packagename>/files/" + _subPath);
                     break;
                 case PathOptions.Manual:
-                    EditorGUILayout.TextField("IOS Path", "/var/mobile/" + _path);
-                    EditorGUILayout.TextField("Android Path", "/storage/emulated/0/" + _path);
+                    DrawReadonlyTextField("IOS Path", "/var/mobile/" + _path);
+                    DrawReadonlyTextField("Android Path", "/storage/emulated/0/" + _path);
                     break;
                 default:
                     break;
             }
-            GUI.enabled = true;
+
+            EditorGUILayout.EndVertical();
         }
 
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(15);
 
-        _isToolsShow = EditorGUILayout.Foldout(_isToolsShow, "Tools", true);
-        
+        _isToolsShow = EditorGUILayout.Foldout(_isToolsShow, "Tools", true, new GUIStyle(EditorStyles.foldout)
+        {
+            onNormal =
+            {
+                textColor = new Color(.98039f, .59608f, .22745f)
+            }
+        });
+
         if (_isToolsShow)
         {
-            EditorGUILayout.BeginVertical("TextArea");
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            var openPathFolderContent = new GUIContent("Open path", SaveSystemEditorIconsData.Folder.Texture);
+            var openPathFolderContent = new GUIContent("Open Path", SaveSystemEditorIconsData.Folder.Texture);
 
-            if (GUILayout.Button(openPathFolderContent, _stylesCache.Get(CacheStyleType.ToolButton), GUILayout.Width(75), GUILayout.Height(40)))
+            if (GUILayout.Button(openPathFolderContent, _stylesCache.Get(CacheStyleType.ToolButton)))
             {
                 if (Directory.Exists(_path) == false)
                 {
@@ -228,13 +306,10 @@ public class SaveSystemSettingsWindow : EditorWindow
     {
         EditorGUILayout.BeginHorizontal();
 
-        GUI.enabled = false;
+        DrawReadonlyTextField("Path", path);
+        _path = path;
 
-        _path = EditorGUILayout.TextField("Path", path);
-
-        GUI.enabled = true;
-
-        EditorGUILayout.LabelField("+", GUILayout.MaxWidth(15));
+        EditorGUILayout.LabelField("+", GUILayout.MaxWidth(10));
 
         EditorGUILayout.EndHorizontal();
 
@@ -275,14 +350,14 @@ public class SaveSystemSettingsWindow : EditorWindow
         configData.SubPath = _config.SubPath;
         configData.FileFormat = _config.FileFormat;
 
-        var pathDirectory = Path.GetDirectoryName(SaveSystemConfigPath);
+        var pathDirectory = Path.GetDirectoryName(SaveSystemConfigDataPath);
 
         if (Directory.Exists(pathDirectory) == false)
         {
             Directory.CreateDirectory(pathDirectory);
         }
 
-        AssetDatabase.CreateAsset(configData, SaveSystemConfigPath);
+        AssetDatabase.CreateAsset(configData, SaveSystemConfigDataPath);
         EditorUtility.SetDirty(configData);
         AssetDatabase.SaveAssetIfDirty(_config);
 
@@ -306,5 +381,15 @@ public class SaveSystemSettingsWindow : EditorWindow
                 _fileFormat = "bin";
                 break;
         }
+    }
+
+    private void DrawReadonlyTextField(string label, string text)
+    {
+        EditorGUILayout.BeginHorizontal();
+        {
+            EditorGUILayout.LabelField(label, GUILayout.Width(EditorGUIUtility.labelWidth - 1));
+            EditorGUILayout.SelectableLabel(text, _stylesCache.Get(CacheStyleType.ReadonlyTextField), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+        }
+        EditorGUILayout.EndHorizontal();
     }
 }

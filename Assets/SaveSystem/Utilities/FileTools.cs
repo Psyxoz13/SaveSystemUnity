@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 public static class FileTools
@@ -30,5 +31,14 @@ public static class FileTools
         }
 
         return path;
+    }
+
+    public static string ReadFile(string path)
+    {
+        var fileText = File.ReadAllText(
+            path,
+            Encoding.UTF8);
+
+        return fileText;
     }
 }

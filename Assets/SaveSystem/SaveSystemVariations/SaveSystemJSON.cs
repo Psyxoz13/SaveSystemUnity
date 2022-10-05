@@ -3,23 +3,23 @@ using UnityEngine;
 
 namespace SSystem
 {
-    internal class SaveSystemJSON : SaveSystemData, ISaveSystem
+    public class SaveSystemJSON : SaveSystemData, ISaveSystem
     {
-        internal SaveSystemJSON(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
+        public SaveSystemJSON(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
         { }
 
-        internal SaveSystemJSON() : base()
+        public SaveSystemJSON() : base()
         { }
 
         public void Save<T>(T data)
         {
-            string json = JsonUtility.ToJson(data);
+            string json = JsonUtility.ToJson(data, true);
 
-            var fileStream = CreateFileStream(typeof(T).Name);
+            var fileStream = GetFileStream(typeof(T).Name, FileMode.Create);
 
             using var streamWriter = new StreamWriter(fileStream);
 
-            streamWriter.Write(json);
+            streamWriter.WriteLine(json);
 
             streamWriter.Close();
             fileStream.Close();
@@ -50,6 +50,13 @@ namespace SSystem
         public void Delete<T>()
         {
             DeleteFile(typeof(T).Name);
+        }
+
+        public void Overwrite<T>(T target)
+        {
+            var json = ReadFile(typeof(T).Name);
+
+            JsonUtility.FromJsonOverwrite(json, target);
         }
     }
 }

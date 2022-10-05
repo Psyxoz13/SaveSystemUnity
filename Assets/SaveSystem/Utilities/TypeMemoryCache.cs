@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-public class TypeMemoryCache<T>
+public class TypeMemoryCache<Key, Type>
 {
-    private Dictionary<object, T> _cache = new Dictionary<object, T>();
+    private Dictionary<Key, Type> _cache = new Dictionary<Key, Type>();
     
-    public bool TryGet(object key, out T cacheObject)
+    public bool TryGet(Key key, out Type cacheObject)
     {
         if (_cache.TryGetValue(key, out cacheObject))
         {
@@ -13,17 +13,17 @@ public class TypeMemoryCache<T>
         return false;
     }
 
-    public T Get(object key)
+    public Type Get(Key key)
     {
         return _cache[key];
     }
 
-    public void Cache(object key, T cacheObject)
+    public void Cache(Key key, Type cacheObject)
     {
         _cache.Add(key, cacheObject);
     }
 
-    public void RemoveObjectCache(object key)
+    public void RemoveObjectCache(Key key)
     {
         _cache.Remove(key);
     }

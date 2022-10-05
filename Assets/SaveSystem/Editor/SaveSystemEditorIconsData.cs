@@ -6,7 +6,7 @@ public static class SaveSystemEditorIconsData
     public static Icon Folder;
     public static Icon Nick;
 
-    private static TypeMemoryCache<Icon> _iconsCache = new TypeMemoryCache<Icon>();
+    private static TypeMemoryCache<string, Icon> _iconsCache = new TypeMemoryCache<string, Icon>();
 
     public static void LoadIcon(ref Icon icon, string fileName)
     {

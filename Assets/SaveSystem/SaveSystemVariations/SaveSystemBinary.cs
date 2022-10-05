@@ -1,19 +1,21 @@
+using System;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
 
 namespace SSystem
 {
-    internal class SaveSystemBinary : SaveSystemData, ISaveSystem
+    public class SaveSystemBinary : SaveSystemData, ISaveSystem
     {
-        internal SaveSystemBinary(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
+        public SaveSystemBinary(string format, string directoryPath) : base(new FileDataConfig(format, directoryPath))
         { }
 
-        internal SaveSystemBinary() : base()
+        public SaveSystemBinary() : base()
         { }
 
         public void Save<T>(T data)
         {
             var binaryFormatter = new BinaryFormatter();
-            var dataFile = CreateFileStream(typeof(T).Name);
+            var dataFile = GetFileStream(typeof(T).Name, System.IO.FileMode.Create);
 
             binaryFormatter.Serialize(dataFile, data);
 
@@ -36,7 +38,7 @@ namespace SSystem
             try
             {
                 var binaryFormatter = new BinaryFormatter();
-                var fileStream = CreateFileStream(typeof(T).Name);
+                var fileStream = GetFileStream(typeof(T).Name, System.IO.FileMode.Open);
 
                 var data = (T)binaryFormatter.Deserialize(fileStream);
 

@@ -40,7 +40,7 @@ namespace SSystem
         protected SaveSystemData()
         { }
 
-        protected FileStream CreateFileStream(string fileName)
+        protected FileStream GetFileStream(string fileName, FileMode fileMode)
         {
             if (Directory.Exists(DirectoryPath) == false)
             {
@@ -48,7 +48,7 @@ namespace SSystem
             }
 
             var path = DirectoryPath + fileName + FileFormat;
-            var dataFile = File.Open(path, FileMode.OpenOrCreate);
+            var dataFile = File.Open(path, fileMode);
 
             if (SaveFiles.Contains(path) == false)
             {
@@ -60,9 +60,8 @@ namespace SSystem
 
         protected string ReadFile(string fileName)
         {
-            var fileText = File.ReadAllText(
-                DirectoryPath + fileName + FileFormat,
-                Encoding.UTF8);
+            var fileText = FileTools.ReadFile(
+                DirectoryPath + fileName + FileFormat);
 
             return fileText;
         }
