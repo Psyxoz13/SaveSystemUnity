@@ -21,8 +21,8 @@ public class SaveSystemSettingsWindow : EditorWindow
     private const string SaveSystemConfigsDirectory = "Assets/SaveSystemConfigs/";
 
     private TypeMemoryCache<CacheStyleType, GUIStyle> _stylesCache = new TypeMemoryCache<CacheStyleType, GUIStyle>();
-    private SaveSystemJSON _saveSystem = new SaveSystemJSON("json", "ProjectSettings");
 
+    private SaveSystemJSON _saveSystem;
     private SaveSystemConfig _config;
 
     private enum CacheStyleType
@@ -92,6 +92,7 @@ public class SaveSystemSettingsWindow : EditorWindow
 
     private void OnEnable()
     {
+        _saveSystem = new SaveSystemJSON("json", "ProjectSettings");
         _saveSystem.Overwrite(this);
 
         var configPath = AssetDatabase.GUIDToAssetPath(_configGUID);
@@ -136,6 +137,8 @@ public class SaveSystemSettingsWindow : EditorWindow
 
             var uniqueFilePath = AssetDatabase.GenerateUniqueAssetPath(path + "SaveSystemConfig.asset");
             var config = CreateInstance<SaveSystemConfig>();
+
+            config.Path = Application.persistentDataPath;
 
             AssetDatabase.CreateAsset(config, uniqueFilePath);
             AssetDatabase.SaveAssets();

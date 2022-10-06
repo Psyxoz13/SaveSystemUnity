@@ -54,9 +54,13 @@ namespace SSystem
 
         public void Overwrite<T>(T target)
         {
-            var json = ReadFile(typeof(T).Name);
+            try
+            {
+                var json = ReadFile(typeof(T).Name);
 
-            JsonUtility.FromJsonOverwrite(json, target);
+                JsonUtility.FromJsonOverwrite(json, target);
+            }
+            catch { }
         }
     }
 }

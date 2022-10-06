@@ -16,6 +16,8 @@ namespace SSystem
 
             if (model.IsFirstShowed == false)
             {
+                SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.Nick, "Psyxoz13.png");
+
                 ShowWindow();
 
                 model.IsFirstShowed = true;
