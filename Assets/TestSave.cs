@@ -73,4 +73,15 @@ public class SubTestModel
     public float Float;
     public double Double;
     public GameObject GameObject;
+    public SubSubTestModel Test = new SubSubTestModel();
+}
+
+[System.Serializable]
+public class SubSubTestModel
+{
+    public int Int;
+    public string String;
+    public float Float;
+    public double Double;
+    public GameObject GameObject;
 }

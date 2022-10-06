@@ -20,6 +20,11 @@ public class TypeMemoryCache<Key, Type>
 
     public void Cache(Key key, Type cacheObject)
     {
+        if (_cache.ContainsKey(key))
+        {
+            return;
+        }
+
         _cache.Add(key, cacheObject);
     }
 

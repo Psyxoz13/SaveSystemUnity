@@ -2,13 +2,12 @@ using SSystem;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 public class SaveSystemSaveEditorWindow : EditorWindow
 {
-    private TypeMemoryCache<SaveSystemSettingsWindow.CacheStyleType, GUIStyle> _stylesCache = new TypeMemoryCache<SaveSystemSettingsWindow.CacheStyleType, GUIStyle>();
+    private TypeMemoryCache<CacheStyleType, GUIStyle> _stylesCache = new TypeMemoryCache<CacheStyleType, GUIStyle>();
 
     private Type _saveFileType;
 
@@ -22,6 +21,26 @@ public class SaveSystemSaveEditorWindow : EditorWindow
     private void CreateGUI()
     {
         SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.File, "file-icon.png");
+
+        _stylesCache.Cache(
+            CacheStyleType.RedLabel,
+            new GUIStyle(EditorStyles.label)
+            {
+                normal = new GUIStyleState()
+                {
+                    textColor = new Color(.89804f, .31373f, .22353f)
+                }
+            });
+
+        _stylesCache.Cache(
+            CacheStyleType.BlueLabel,
+            new GUIStyle(EditorStyles.label)
+            {
+                normal = new GUIStyleState()
+                {
+                    textColor = new Color(.29f, .4117f, .741f)
+                }
+            });
     }
 
     private void OnGUI()
@@ -30,10 +49,10 @@ public class SaveSystemSaveEditorWindow : EditorWindow
 
         DrawReadonlyTextField("Save File", _saveFilePath);
 
-        if (GUILayout.Button(
+        if (GUILayout.Button( 
             SaveSystemEditorIconsData.File.Texture,
             _stylesCache.Get(
-                SaveSystemSettingsWindow.CacheStyleType.SelectDirectory),
+                CacheStyleType.SelectDirectory),
             GUILayout.MaxWidth(20),
             GUILayout.MaxHeight(18)))
         {
@@ -72,6 +91,8 @@ public class SaveSystemSaveEditorWindow : EditorWindow
 
         _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, EditorStyles.helpBox);
 
+        DrawTypeLabel(_saveFileType, new GUIStyle(EditorStyles.largeLabel));
+
         EditorGUI.BeginChangeCheck();
 
         SerializeObjectReflection(_saveObject, _saveFileType);
@@ -84,7 +105,7 @@ public class SaveSystemSaveEditorWindow : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
-    private void SerializeObjectReflection(object obj, Type type)
+    private void SerializeObjectReflection(object obj, Type type, bool isSubClass = false)
     {
         var fields = type.GetFields();
 
@@ -92,37 +113,51 @@ public class SaveSystemSaveEditorWindow : EditorWindow
         {
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField(field.FieldType.Name, GUILayout.Width(100));
-
             switch (field.FieldType.Name)
             {
                 case "Single":
+                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
                     field.SetValue(obj, EditorGUILayout.FloatField(field.Name, (float)field.GetValue(obj)));
                     break;
                 case "Int32":
+                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
                     field.SetValue(obj, EditorGUILayout.IntField(field.Name, (int)field.GetValue(obj)));
                     break;
                 case "String":
+                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
                     field.SetValue(obj, EditorGUILayout.TextField(field.Name, field.GetValue(obj).ToString()));
                     break;
                 case "Double":
+                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
                     field.SetValue(obj, EditorGUILayout.DoubleField(field.Name, (double)field.GetValue(obj)));
                     break;
                 case "Enum":
+                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
                     field.SetValue(obj, EditorGUILayout.EnumPopup(field.Name, (Enum)field.GetValue(obj)));
                     break;
                 default:
                     try
                     {
-                        field.SetValue(obj, EditorGUILayout.ObjectField(field.Name, (UnityEngine.Object)field.GetValue(obj), field.FieldType, true));
+                        var value = (UnityEngine.Object)field.GetValue(obj);
+
+                        DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
+                        field.SetValue(obj, EditorGUILayout.ObjectField(
+                            field.Name,
+                            value,
+                            field.FieldType,
+                            true));
                     }
                     catch
                     {
                         try
                         {
-                            EditorGUILayout.BeginVertical();
+                            EditorGUILayout.Space();
 
-                            SerializeObjectReflection(field.GetValue(obj), field.FieldType);
+                            EditorGUILayout.BeginVertical();
+                            EditorGUILayout.Space();
+
+                            DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.RedLabel));
+                            SerializeObjectReflection(field.GetValue(obj), field.FieldType, true);
 
                             EditorGUILayout.EndVertical();
                         }
@@ -137,12 +172,20 @@ public class SaveSystemSaveEditorWindow : EditorWindow
         }
     }
 
+    private void DrawTypeLabel(Type type, GUIStyle style)
+    {
+        EditorGUILayout.LabelField(
+            type.Name,
+            style,
+            GUILayout.MaxWidth(200));
+    }
+
     private void DrawReadonlyTextField(string label, string text)
     {
         EditorGUILayout.BeginHorizontal();
         {
             EditorGUILayout.LabelField(label, GUILayout.Width(EditorGUIUtility.labelWidth - 1));
-            EditorGUILayout.SelectableLabel(text, _stylesCache.Get(SaveSystemSettingsWindow.CacheStyleType.ReadonlyTextField), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            EditorGUILayout.SelectableLabel(text, _stylesCache.Get(CacheStyleType.ReadonlyTextField), GUILayout.Height(EditorGUIUtility.singleLineHeight));
         }
         EditorGUILayout.EndHorizontal();
     }

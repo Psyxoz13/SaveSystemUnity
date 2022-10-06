@@ -25,15 +25,6 @@ public class SaveSystemSettingsWindow : EditorWindow
     private SaveSystemJSON _saveSystem;
     private SaveSystemConfig _config;
 
-    internal enum CacheStyleType
-    {
-        ToolButton,
-        SelectDirectory,
-        ReadonlyTextField,
-        ContentBox,
-        ContentBoxSmall
-    }
-
     [MenuItem("SaveSystem/Settings")]
     public static void ShowWindow()
     {       
@@ -86,11 +77,6 @@ public class SaveSystemSettingsWindow : EditorWindow
         });
 
         TrySetFormat();
-    }
-
-    private void OnDestroy()
-    {
-        _stylesCache.ClearCache();
     }
 
     private void OnEnable()
@@ -409,3 +395,4 @@ public class SaveSystemSettingsWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
     }
 }
+
