@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class TypeMemoryCache<Key, Type>
 {
-    private Dictionary<Key, Type> _cache = new Dictionary<Key, Type>();
+    private static Dictionary<Key, Type> _cache = new Dictionary<Key, Type>();
     
     public bool TryGet(Key key, out Type cacheObject)
     {

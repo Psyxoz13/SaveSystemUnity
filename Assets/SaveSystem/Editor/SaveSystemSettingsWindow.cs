@@ -25,7 +25,7 @@ public class SaveSystemSettingsWindow : EditorWindow
     private SaveSystemJSON _saveSystem;
     private SaveSystemConfig _config;
 
-    private enum CacheStyleType
+    internal enum CacheStyleType
     {
         ToolButton,
         SelectDirectory,
@@ -45,6 +45,7 @@ public class SaveSystemSettingsWindow : EditorWindow
     private void CreateGUI()
     {
         SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.Folder, "folder-icon.png");
+        SaveSystemEditorIconsData.LoadIcon(ref SaveSystemEditorIconsData.Edit, "edit-icon.png");
 
         _stylesCache.Cache(CacheStyleType.ToolButton, new GUIStyle("button")
         {
@@ -52,7 +53,9 @@ public class SaveSystemSettingsWindow : EditorWindow
             imagePosition = ImagePosition.ImageAbove,
             padding = new RectOffset(5, 5, 5, 5),
             fixedWidth = 70,
-            fixedHeight = 50
+            fixedHeight = 50,
+            richText = true,
+            fontSize = 11
         });
 
         _stylesCache.Cache(CacheStyleType.SelectDirectory, new GUIStyle("button")
@@ -285,6 +288,7 @@ public class SaveSystemSettingsWindow : EditorWindow
         if (_isToolsShow)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.BeginHorizontal();
 
             var openPathFolderContent = new GUIContent("Open Path", SaveSystemEditorIconsData.Folder.Texture);
 
@@ -300,6 +304,15 @@ public class SaveSystemSettingsWindow : EditorWindow
                 }
             }
 
+            var editSaveContent = new GUIContent("Save Editor", SaveSystemEditorIconsData.Edit.Texture);
+
+            if (GUILayout.Button(editSaveContent, _stylesCache.Get(CacheStyleType.ToolButton)))
+            {
+                var window = GetWindow<SaveSystemSaveEditorWindow>("Save Editor");
+                window.minSize = new Vector2(500f, 400f);
+            }
+
+            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndVertical();
         }

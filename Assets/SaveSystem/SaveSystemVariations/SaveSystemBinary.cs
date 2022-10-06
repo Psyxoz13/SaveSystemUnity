@@ -48,8 +48,37 @@ namespace SSystem
             }
             catch
             {
-                return (T)System.Activator.CreateInstance(typeof(T));
+                return (T)Activator.CreateInstance(typeof(T));
             }
+        }
+
+        public object Load(Type type)
+        {
+            try
+            {
+                var binaryFormatter = new BinaryFormatter();
+                var fileStream = GetFileStream(type.Name, System.IO.FileMode.Open);
+
+                var data = binaryFormatter.Deserialize(fileStream);
+
+                fileStream.Close();
+
+                return data;
+            }
+            catch
+            {
+                return Activator.CreateInstance(type);
+            }
+        }
+
+        public void Save(object data, Type type)
+        {
+            var binaryFormatter = new BinaryFormatter();
+            var dataFile = GetFileStream(type.Name, System.IO.FileMode.Create);
+
+            binaryFormatter.Serialize(dataFile, data);
+
+            dataFile.Close();
         }
     }
 }

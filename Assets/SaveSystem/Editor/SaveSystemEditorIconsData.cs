@@ -5,6 +5,8 @@ public static class SaveSystemEditorIconsData
 {
     public static Icon Folder;
     public static Icon Nick;
+    public static Icon File;
+    public static Icon Edit;
 
     private static TypeMemoryCache<string, Icon> _iconsCache = new TypeMemoryCache<string, Icon>();
 

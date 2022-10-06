@@ -1706,9 +1706,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b29c7d5e08e3e60438ce5a742df304bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Id: 0
-  Name: 
-  Speed: 0
+  TestModel:
+    Int: 1
+    String: Hi
+    Float: 0.39
+    Double: 0.63
+    Camera: {fileID: 963194227}
+    Test:
+      Int: 2
+      String: World
+      Float: 1.44
+      Double: 2.1
+      GameObject: {fileID: 1799565579}
   _idField: {fileID: 1998666390}
   _nameField: {fileID: 763938999}
   _speedField: {fileID: 724052840}

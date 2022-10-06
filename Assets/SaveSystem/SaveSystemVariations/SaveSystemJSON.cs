@@ -62,5 +62,35 @@ namespace SSystem
             }
             catch { }
         }
+
+        public object Load(System.Type type)
+        {
+            try
+            {
+                var json = ReadFile(type.Name);
+
+                var data = JsonUtility.FromJson(json, type);
+
+                return data;
+            }
+            catch
+            {
+                return System.Activator.CreateInstance(type);
+            }
+        }
+
+        public void Save(object data, System.Type type)
+        {
+            string json = JsonUtility.ToJson(data, true);
+
+            var fileStream = GetFileStream(type.Name, FileMode.Create);
+
+            using var streamWriter = new StreamWriter(fileStream);
+
+            streamWriter.WriteLine(json);
+
+            streamWriter.Close();
+            fileStream.Close();
+        }
     }
 }

@@ -4,6 +4,9 @@ namespace SSystem
 {
     public static class SaveSystem
     {
+        public static string FolderPath { get; private set; }
+        public static string Format { get; private set; }
+
         public enum SaveVariations
         {
             Json,
@@ -50,6 +53,9 @@ namespace SSystem
                     _saveSystem = new SaveSystemBinary(format, path);
                     break;
             }
+
+            FolderPath = path;
+            Format = format;
         }
 
         public static void Save<T>(T data)

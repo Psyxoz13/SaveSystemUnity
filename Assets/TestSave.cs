@@ -5,9 +5,7 @@ using SSystem;
 [ExecuteInEditMode]
 public class TestSave : MonoBehaviour
 {
-    public int Id;
-    public string Name;
-    public float Speed;
+    public TestModel TestModel;
 
     [SerializeField] private InputField _idField;
     [SerializeField] private InputField _nameField;
@@ -25,14 +23,7 @@ public class TestSave : MonoBehaviour
     [ContextMenu("Save")]
     public void Save()
     {
-        var model = new TestModel()
-        {
-            ID = Id,
-            Name = Name,
-            Speed = Speed
-        };
-
-        SaveSystem.Save(model);
+        SaveSystem.Save(TestModel);
     }
 
     [ContextMenu("Load")]
@@ -40,35 +31,46 @@ public class TestSave : MonoBehaviour
     {
         var model = SaveSystem.Load<TestModel>();
 
-        Id = model.ID;
-        Name = model.Name;
-        Speed = model.Speed;
+        TestModel = model;
 
-        _idField.text = Id.ToString();
-        _nameField.text = Name;
-        _speedField.text = Speed.ToString();
+        _idField.text = TestModel.Int.ToString();
+        _nameField.text = TestModel.String;
+        _speedField.text = TestModel.Float.ToString();
     }
 
     public void SetID(string id)
     {
-        Id = int.Parse(id);
+        TestModel.Int = int.Parse(id);
     }
 
     public void SetName(string name)
     {
-        Name = name;
+        TestModel.String = name;
     }
 
     public void SetSpeed(string speed)
     {
-        Speed = float.Parse(speed);
+        TestModel.Float = float.Parse(speed);
     }
 }
 
 [System.Serializable]
 public class TestModel
 {
-    public int ID;
-    public string Name;
-    public float Speed;
+    public int Int;
+    public string String;
+    public float Float;
+    public double Double;
+    public Camera Camera;
+    public SubTestModel Test = new SubTestModel();
+}
+
+[System.Serializable]
+public class SubTestModel
+{
+    public int Int;
+    public string String;
+    public float Float;
+    public double Double;
+    public GameObject GameObject;
 }
