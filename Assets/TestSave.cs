@@ -61,8 +61,17 @@ public class TestModel
     public string String;
     public float Float;
     public double Double;
-    public Camera Camera;
     public SubTestModel Test = new SubTestModel();
+    public bool Bool;
+    public byte Byte;
+    public sbyte SByte;
+    public short Short;
+    public ushort UShort;
+    public uint UInt;
+    public long Long;
+    public char Char;
+    public object Object;
+    public decimal Decimal;
 }
 
 [System.Serializable]
@@ -72,16 +81,11 @@ public class SubTestModel
     public string String;
     public float Float;
     public double Double;
-    public GameObject GameObject;
-    public SubSubTestModel Test = new SubSubTestModel();
 }
 
-[System.Serializable]
-public class SubSubTestModel
+public enum EnumAs
 {
-    public int Int;
-    public string String;
-    public float Float;
-    public double Double;
-    public GameObject GameObject;
+    one,
+    two,
+    three
 }

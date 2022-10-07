@@ -8,13 +8,8 @@ namespace SSystem
 {
     public abstract class SaveSystemData
     {
-        protected static List<string> SaveFiles
-        {
-            get => GetSavesList();
-        }
-
-        protected static string FileFormat { get; private set; } = ".save";
-        protected static string DirectoryPath { get; private set; } = Application.persistentDataPath + "/";
+        protected string FileFormat { get; private set; } = ".save";
+        protected string DirectoryPath { get; private set; } = Application.persistentDataPath + "/";
 
         protected SaveSystemData(FileDataConfig fileDataConfig)
         {
@@ -50,11 +45,6 @@ namespace SSystem
             var path = DirectoryPath + fileName + FileFormat;
             var dataFile = File.Open(path, fileMode);
 
-            if (SaveFiles.Contains(path) == false)
-            {
-                SaveFiles.Add(DirectoryPath + fileName + FileFormat);
-            }
-
             return dataFile;
         }
 
@@ -69,8 +59,6 @@ namespace SSystem
         protected void DeleteFile(string fileName)
         {
             File.Delete(DirectoryPath + fileName + FileFormat);
-
-            SaveFiles.Remove(DirectoryPath + fileName + FileFormat);
         }
 
         protected struct FileDataConfig
@@ -83,18 +71,6 @@ namespace SSystem
                 FileFormat = fileFormat;
                 DirectoryPath = directoryPath;
             }
-        }
-
-        private static List<string> GetSavesList()
-        {
-            var savesList = new List<string>();
-
-            savesList.AddRange(
-                Directory.GetFiles(DirectoryPath)
-                    .Where(
-                        path => Path.GetExtension(path) == FileFormat));
-
-            return savesList;
         }
     }
 }

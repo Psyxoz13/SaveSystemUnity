@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SSystem
 {
-    internal class SaveSystemWelcomeWindow : EditorWindow
+    public class SaveSystemWelcomeWindow : EditorWindow
     {
         private static ISaveSystem _saveSystem;
 

@@ -2,6 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using SSystem;
+using System;
 
 public class SaveSystemSettingsWindow : EditorWindow
 {
@@ -365,6 +366,19 @@ public class SaveSystemSettingsWindow : EditorWindow
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+
+        CallSaveSystemInit();
+    }
+
+    private void CallSaveSystemInit()
+    {
+        var methodInfo = typeof(SaveSystem)
+            .GetMethod(
+            "Init",
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Static);
+
+        methodInfo.Invoke(null, null);
     }
 
     private void TrySetFormat()

@@ -1,5 +1,6 @@
 using SSystem;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -7,16 +8,28 @@ using UnityEngine;
 
 public class SaveSystemSaveEditorWindow : EditorWindow
 {
+    [SerializeReference] private dynamic _saveObject;
+
     private TypeMemoryCache<CacheStyleType, GUIStyle> _stylesCache = new TypeMemoryCache<CacheStyleType, GUIStyle>();
 
+    private Editor _saveFileEditor;
     private Type _saveFileType;
 
     private ISaveSystem _saveSystem;
 
     private Vector2 _scrollPosition;
 
-    private object _saveObject;
     private string _saveFilePath;
+
+    private static readonly string[] _excludedFields = 
+    { 
+        "m_Script"
+    };
+
+    private static readonly Dictionary<string, string> _renameFields = new Dictionary<string, string>
+    {
+        { "_saveObject", "View" }
+    };
 
     private void CreateGUI()
     {
@@ -41,6 +54,8 @@ public class SaveSystemSaveEditorWindow : EditorWindow
                     textColor = new Color(.29f, .4117f, .741f)
                 }
             });
+
+        _saveFileEditor = Editor.CreateEditor(this);
     }
 
     private void OnGUI()
@@ -93,84 +108,15 @@ public class SaveSystemSaveEditorWindow : EditorWindow
 
         DrawTypeLabel(_saveFileType, new GUIStyle(EditorStyles.largeLabel));
 
-        EditorGUI.BeginChangeCheck();
 
-        SerializeObjectReflection(_saveObject, _saveFileType);
 
-        if (EditorGUI.EndChangeCheck())
-        {
-            _saveSystem.Save(_saveObject, _saveFileType);
-        }
+        DrawProperties(_saveFileEditor.serializedObject, _excludedFields);
+
+
 
         EditorGUILayout.EndScrollView();
     }
 
-    private void SerializeObjectReflection(object obj, Type type, bool isSubClass = false)
-    {
-        var fields = type.GetFields();
-
-        foreach (var field in fields)
-        {
-            EditorGUILayout.BeginHorizontal();
-
-            switch (field.FieldType.Name)
-            {
-                case "Single":
-                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                    field.SetValue(obj, EditorGUILayout.FloatField(field.Name, (float)field.GetValue(obj)));
-                    break;
-                case "Int32":
-                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                    field.SetValue(obj, EditorGUILayout.IntField(field.Name, (int)field.GetValue(obj)));
-                    break;
-                case "String":
-                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                    field.SetValue(obj, EditorGUILayout.TextField(field.Name, field.GetValue(obj).ToString()));
-                    break;
-                case "Double":
-                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                    field.SetValue(obj, EditorGUILayout.DoubleField(field.Name, (double)field.GetValue(obj)));
-                    break;
-                case "Enum":
-                    DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                    field.SetValue(obj, EditorGUILayout.EnumPopup(field.Name, (Enum)field.GetValue(obj)));
-                    break;
-                default:
-                    try
-                    {
-                        var value = (UnityEngine.Object)field.GetValue(obj);
-
-                        DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.BlueLabel));
-                        field.SetValue(obj, EditorGUILayout.ObjectField(
-                            field.Name,
-                            value,
-                            field.FieldType,
-                            true));
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            EditorGUILayout.Space();
-
-                            EditorGUILayout.BeginVertical();
-                            EditorGUILayout.Space();
-
-                            DrawTypeLabel(field.FieldType, _stylesCache.Get(CacheStyleType.RedLabel));
-                            SerializeObjectReflection(field.GetValue(obj), field.FieldType, true);
-
-                            EditorGUILayout.EndVertical();
-                        }
-                        catch
-                        {
-                            EditorGUILayout.LabelField(field.FieldType.Name, field.GetValue(obj).ToString());
-                        }
-                    }
-                    break;
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-    }
 
     private void DrawTypeLabel(Type type, GUIStyle style)
     {
@@ -202,5 +148,37 @@ public class SaveSystemSaveEditorWindow : EditorWindow
         }
 
         return null;
+    }
+
+    private void DrawProperties(SerializedObject obj, params string[] propertyToExclude)
+    {
+        EditorGUI.BeginChangeCheck();
+
+        SerializedProperty iterator = obj.GetIterator();
+
+        bool enterChildren = true;
+
+        while (iterator.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+
+            var label = new GUIContent();
+
+            if (_renameFields.ContainsKey(iterator.name))
+            {
+                label.text = _renameFields[iterator.name];
+            }
+
+            if (!propertyToExclude.Contains(iterator.name))
+            {
+                EditorGUILayout.PropertyField(iterator, label, true);
+            }
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            _saveFileEditor.serializedObject.ApplyModifiedProperties();
+            _saveSystem.Save(_saveObject, _saveFileType);
+        }
     }
 }

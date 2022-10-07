@@ -17,6 +17,13 @@ namespace SSystem
 
         static SaveSystem()
         {
+            Init();
+        }
+
+        private static void Init()
+        {
+            Debug.Log("Update");
+
             var saveSystemConfigData = Resources.Load<SaveSystemConfigData>("SaveSystem/SaveSystemData");
 
             string path = string.Empty;
